@@ -1,0 +1,21 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    faraday (0.8.11)
+      multipart-post (~> 1.2.0)
+    multi_json (1.15.0)
+    multipart-post (1.2.0)
+    rubberband (0.9.8)
+      faraday (~> 0.8.0)
+      multi_json
+    wavefile (1.1.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  rubberband
+  wavefile
+
+BUNDLED WITH
+   2.1.4
