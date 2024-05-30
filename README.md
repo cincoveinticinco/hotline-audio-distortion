@@ -10,11 +10,12 @@ bundle install
 ruby index.rb
 '''
 
-
 ####Empaquetar y desplegar
 
-bundle config set path 'vendor/bundle'
+This repo deploys in AWS Elastic Container Registry
 
-bundle install
+docker build -t sox-ruby-container .
 
-zip -r function.zip lambda_function.rb Gemfile Gemfile.lock vendor
+docker tag sox-ruby-container:latest 406495642741.dkr.ecr.us-west-2.amazonaws.com/sox-ruby-container:latest
+
+docker push 406495642741.dkr.ecr.us-west-2.amazonaws.com/sox-ruby-container:latest

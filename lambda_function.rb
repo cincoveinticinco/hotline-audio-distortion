@@ -1,10 +1,7 @@
 require 'sox'
 require 'securerandom'
+require 'aws-sdk-s3'
 
-input_file = 'prueba.wav'
-
-# Ruta del archivo de salida distorsionado
-output_file = 'archivo_distorsionado.wav'
 
 def download_from_s3(bucket_name, object_key, download_path)
     s3 = Aws::S3::Client.new
@@ -36,46 +33,28 @@ def distort_audio(input_file, output_file)
     puts "Archivo distorsionado guardado en #{output_file}"
 end
 
-def process_audio(event)
+def process_audio(payload)
     puts "entrando a base"
-    puts event
+    puts payload
+    event = payload[:event]
     source_bucket = event['Records'][0]['s3']['bucket']['name']
     source_key = event['Records'][0]['s3']['object']['key']
+
     file_name = File.basename(source_key)
     target_bucket = source_bucket
     target_key = "output/#{file_name}"
 
-    # Paths for the local filesystem
-    download_path = "/tmp/#{SecureRandom.uuid}_input.mp3"
-    output_path = "/tmp/#{SecureRandom.uuid}_output.mp3"
+    puts "data - #{source_bucket} - #{source_key} - #{file_name} - #{target_bucket} - #{target_key}"
 
-    # Download the file from S3
+    download_path = "/tmp/#{SecureRandom.uuid}_input.wav"
+    output_path = "/tmp/#{SecureRandom.uuid}_output.wav"
+
     download_from_s3(source_bucket, source_key, download_path)
 
-    # Distort the audio
     puts "distorsion de audio #{download_path} #{output_path}"
     distort_audio(download_path, output_path)
 
-    # Upload the distorted file back to S3
     upload_to_s3(target_bucket, target_key, output_path)
 
     puts "Processed file uploaded to #{target_bucket}/#{target_key}"
 end
-
-
-# Uncomment for local testing
-# event = {
-#   'Records' => [
-#     {
-#       's3' => {
-#         'bucket' => {
-#           'name' => 'your-source-bucket-name'
-#         },
-#         'object': {
-#           'key': 'input/path/to/your/input/file.mp3'
-#         }
-#       }
-#     }
-#   ]
-# }
-# process_audio(event, nil)
