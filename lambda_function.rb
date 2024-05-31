@@ -13,7 +13,6 @@ def download_from_s3(bucket_name, object_key, download_path)
 end
 
 def upload_to_s3(bucket_name, object_key, file_path)
-  puts "entrando a descarga s3"
     s3 = Aws::S3::Client.new
     s3.put_object(
       bucket: bucket_name,
@@ -34,27 +33,26 @@ def distort_audio(input_file, output_file)
 end
 
 def process_audio(payload)
-    puts "entrando a base"
-    puts payload
     event = payload[:event]
     source_bucket = event['Records'][0]['s3']['bucket']['name']
     source_key = event['Records'][0]['s3']['object']['key']
 
-    file_name = File.basename(source_key)
-    target_bucket = source_bucket
-    target_key = "output/#{file_name}"
+    original_dir = ENV['ORIGINAL_DIR']
+    secure_dir = ENV['SECURE_DIR']
 
-    puts "data - #{source_bucket} - #{source_key} - #{file_name} - #{target_bucket} - #{target_key}"
+    target_bucket = source_bucket
+    target_key = source_key.gsub(original_dir,secure_dir)
+    target_key = "#{target_key}.wav"
 
     download_path = "/tmp/#{SecureRandom.uuid}_input.wav"
     output_path = "/tmp/#{SecureRandom.uuid}_output.wav"
 
     download_from_s3(source_bucket, source_key, download_path)
 
-    puts "distorsion de audio #{download_path} #{output_path}"
     distort_audio(download_path, output_path)
 
     upload_to_s3(target_bucket, target_key, output_path)
 
+    puts "Processed file updated from #{source_bucket}/#{source_key}"
     puts "Processed file uploaded to #{target_bucket}/#{target_key}"
 end
