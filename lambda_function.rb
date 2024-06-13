@@ -42,7 +42,7 @@ def process_audio(payload)
 
     target_bucket = source_bucket
     target_key = source_key.gsub(original_dir,secure_dir)
-    target_key = "#{target_key}.wav"
+    target_key = target_key.gsub('wav','mp3')
 
     download_path = "/tmp/#{SecureRandom.uuid}_input.wav"
     output_path = "/tmp/#{SecureRandom.uuid}_output.wav"
